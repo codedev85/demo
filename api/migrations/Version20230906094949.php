@@ -48,6 +48,15 @@ final class Version20230906094949 extends AbstractMigration
         $this->addSql('ALTER TABLE bookmark ADD CONSTRAINT FK_DA62921D16A2B381 FOREIGN KEY (book_id) REFERENCES book (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE review ADD CONSTRAINT FK_794381C6A76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE review ADD CONSTRAINT FK_794381C616A2B381 FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
+
+        //Modified Schema
+        $this->addSql('ALTER TABLE book ADD promotion_status VARCHAR(255) DEFAULT \'None\' NOT NULL');
+        $this->addSql('UPDATE book SET promotion_status = CASE WHEN is_promoted = false THEN \'None\' ELSE \'Basic\' END');
+        $this->addSql('ALTER TABLE book DROP is_promoted');
+
+        $this->addSql('ALTER TABLE book ADD slug VARCHAR(255) NOT NULL');
+        // Set default value for existing records
+        $this->addSql('UPDATE book SET slug = CONCAT(\'book-\', id::text)');
     }
 
     public function down(Schema $schema): void
@@ -63,5 +72,11 @@ final class Version20230906094949 extends AbstractMigration
         $this->addSql('DROP TABLE parchment');
         $this->addSql('DROP TABLE review');
         $this->addSql('DROP TABLE "user"');
+
+        //Modified schema
+        $this->addSql('ALTER TABLE book ADD is_promoted BOOLEAN DEFAULT false NOT NULL');
+        $this->addSql('UPDATE book SET is_promoted = CASE WHEN promotion_status = \'None\' THEN false ELSE true END');
+        $this->addSql('ALTER TABLE book DROP promotion_status');
+        $this->addSql('ALTER TABLE book DROP slug');
     }
 }

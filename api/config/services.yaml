@@ -20,6 +20,13 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Command\HighestReviewsDayCommand:
+        class: App\Command\HighestReviewsDayCommand
+        tags:
+            - name: 'console.command'
+              command: 'app:highest-reviews-day'
+   
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
@@ -30,3 +37,5 @@ when@test:
             autowire: true
             autoconfigure: true
             public: true
+
+ 

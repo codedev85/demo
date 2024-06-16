@@ -17,6 +17,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\UrlGeneratorInterface;
 use App\Enum\BookCondition;
+use App\Enum\PromotionStatus;
 use App\Repository\BookRepository;
 use App\State\Processor\BookPersistProcessor;
 use App\State\Processor\BookRemoveProcessor;
@@ -32,6 +33,8 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
+
+
 
 /**
  * A book.
@@ -100,8 +103,24 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 #[UniqueEntity(fields: ['book'])]
+#[UniqueEntity(fields: ['slug'])]
 class Book
 {
+    #[ORM\Column(type: Types::BOOLEAN, options: ["default" => false])]
+    public bool $isPromoted = false;
+
+    #[ORM\Column(type: 'string', enumType: PromotionStatus::class)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: PromotionStatus::class, message: 'Choose a valid promotion status.')]
+    #[Groups(['Book:read:admin', 'Book:write'])]
+    public PromotionStatus $promotionStatus = PromotionStatus::None;
+
+    #[ORM\Column(type: Types::STRING, unique: true)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min:5)]
+    #[Assert\Regex(pattern: '/^[a-z0-9-]+$/', message: 'The slug must contain only lowercase letters, numbers, or hyphens.')]
+    #[Groups(['Book:read', 'Book:write'])]
+    public string $slug;
     /**
      * @see https://schema.org/identifier
      */
